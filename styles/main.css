@@ -66,6 +66,10 @@ a {
   background: #f8d66a;
 }
 
+.score-table .primary-button {
+  margin-top: 8px;
+}
+
 .placeholder {
   border: 2px dashed #1f1b16;
   border-radius: 12px;
@@ -146,11 +150,13 @@ a {
 }
 
 .score-input {
+  width: 100%;
   padding: 10px 12px;
   border: 2px solid #1f1b16;
   border-radius: 10px;
   background: #fff;
   text-align: right;
+  box-sizing: border-box;
 }
 
 .section-header {
@@ -177,11 +183,13 @@ a {
   border-bottom: 2px solid #1f1b16;
   padding: 10px 8px;
   text-align: right;
+  vertical-align: top;
 }
 
 .score-table th:first-child,
 .score-table td:first-child {
   text-align: left;
+  width: 140px;
 }
 
 .score-table tfoot td {

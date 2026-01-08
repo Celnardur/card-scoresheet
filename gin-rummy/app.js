@@ -159,35 +159,6 @@ const GinRummyApp = {
         ),
       ]),
       m("section.card", [
-        m("h2", "Add Round"),
-        m(
-          "form.round-form",
-          {
-            onsubmit: addRound,
-          },
-          [
-            m(
-              "div.round-grid",
-              state.players.map((player) =>
-                m("label.score-field", { key: player.id }, [
-                  m("span", player.name),
-                  m("input.score-input", {
-                    type: "number",
-                    inputmode: "numeric",
-                    value: uiState.draftScores[player.id],
-                    oninput: (event) => {
-                      uiState.draftScores[player.id] = event.target.value
-                    },
-                    placeholder: "0",
-                  }),
-                ])
-              )
-            ),
-            m("button.primary-button", { type: "submit" }, "Add round"),
-          ]
-        ),
-      ]),
-      m("section.card", [
         m("div.section-header", [
           m("h2", "Scoreboard"),
           m(
@@ -203,36 +174,61 @@ const GinRummyApp = {
             "Clear rounds"
           ),
         ]),
-        state.rounds.length === 0
-          ? m("p", "No rounds yet. Add scores above.")
-          : m(
-              "div.table-wrap",
-              m("table.score-table", [
-                m("thead", [
-                  m("tr", [
-                    m("th", "Round"),
-                    ...state.players.map((player) => m("th", player.name)),
-                  ]),
+        m(
+          "form.round-form",
+          {
+            onsubmit: addRound,
+          },
+          m("div.table-wrap", [
+            m("table.score-table", [
+              m("thead", [
+                m("tr", [
+                  m("th", "Round"),
+                  ...state.players.map((player) => m("th", player.name)),
                 ]),
-                m(
-                  "tbody",
-                  state.rounds.map((round) =>
-                    m("tr", { key: round.id }, [
-                      m("td", `#${round.id}`),
-                      ...state.players.map((player) =>
-                        m("td", round.scores[player.id] ?? 0)
-                      ),
-                    ])
-                  )
+              ]),
+              m("tbody", [
+                ...state.rounds.map((round) =>
+                  m("tr", { key: round.id }, [
+                    m("td", `#${round.id}`),
+                    ...state.players.map((player) =>
+                      m("td", round.scores[player.id] ?? 0)
+                    ),
+                  ])
                 ),
-                m("tfoot", [
-                  m("tr", [
-                    m("td", "Total"),
-                    ...state.players.map((player) => m("td", totals[player.id])),
+                m("tr", { key: "input-row" }, [
+                  m("td", [
+                    m("div", "Next"),
+                    m(
+                      "button.primary-button",
+                      { type: "submit" },
+                      "Add round"
+                    ),
                   ]),
+                  ...state.players.map((player) =>
+                    m("td", [
+                      m("input.score-input", {
+                        type: "number",
+                        inputmode: "numeric",
+                        value: uiState.draftScores[player.id],
+                        oninput: (event) => {
+                          uiState.draftScores[player.id] = event.target.value
+                        },
+                        placeholder: "0",
+                      }),
+                    ])
+                  ),
                 ]),
-              ])
-            ),
+              ]),
+              m("tfoot", [
+                m("tr", [
+                  m("td", "Total"),
+                  ...state.players.map((player) => m("td", totals[player.id])),
+                ]),
+              ]),
+            ]),
+          ])
+        ),
       ]),
     ])
   },
