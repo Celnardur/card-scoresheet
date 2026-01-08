@@ -16,6 +16,11 @@ main {
   padding: 48px 20px 64px;
 }
 
+button,
+input {
+  font: inherit;
+}
+
 header {
   margin-bottom: 32px;
 }
@@ -66,4 +71,120 @@ a {
   border-radius: 12px;
   padding: 20px;
   background: #fffaf2;
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid #1f1b16;
+  background: #fffaf2;
+  color: #1f1b16;
+  cursor: pointer;
+}
+
+.secondary-button:hover,
+.secondary-button:focus {
+  background: #f1e6d7;
+}
+
+.card {
+  border: 2px solid #1f1b16;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fffaf2;
+  margin-bottom: 24px;
+}
+
+.stack {
+  display: grid;
+  gap: 24px;
+}
+
+.page-header h1 {
+  margin-top: 8px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 6px;
+  text-decoration: none;
+}
+
+.player-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.text-input {
+  flex: 1 1 200px;
+  padding: 10px 12px;
+  border: 2px solid #1f1b16;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.round-form {
+  display: grid;
+  gap: 16px;
+}
+
+.round-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.score-field {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.score-input {
+  padding: 10px 12px;
+  border: 2px solid #1f1b16;
+  border-radius: 10px;
+  background: #fff;
+  text-align: right;
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 420px;
+}
+
+.score-table th,
+.score-table td {
+  border-bottom: 2px solid #1f1b16;
+  padding: 10px 8px;
+  text-align: right;
+}
+
+.score-table th:first-child,
+.score-table td:first-child {
+  text-align: left;
+}
+
+.score-table tfoot td {
+  font-weight: 700;
+  border-top: 2px solid #1f1b16;
 }
