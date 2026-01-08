@@ -6,7 +6,7 @@ for each round of your card game.
 
 ## Currently supported Games
 
-- Gin Rummy (In Progress)
+- Gin Rummy
 
 ## All Local
 

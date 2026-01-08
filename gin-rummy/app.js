@@ -41,20 +41,72 @@ const saveState = (state) => {
 
 const state = loadState()
 const uiState = {
-  draftScores: {},
+  draftKnockerId: null,
+  draftDeadwood: {},
+  draftBigGin: false,
 }
 
-const ensureDraftScores = () => {
-  state.players.forEach((player) => {
-    if (!(player.id in uiState.draftScores)) {
-      uiState.draftScores[player.id] = ""
+const ensureDraftDeadwood = (players) => {
+  players.forEach((player) => {
+    if (!(player.id in uiState.draftDeadwood)) {
+      uiState.draftDeadwood[player.id] = ""
     }
   })
 }
 
-const clearDraftScores = () => {
-  uiState.draftScores = {}
-  ensureDraftScores()
+const resetDraft = (players) => {
+  uiState.draftKnockerId = players.length > 0 ? players[0].id : null
+  uiState.draftDeadwood = {}
+  ensureDraftDeadwood(players)
+  uiState.draftBigGin = false
+}
+
+const parseNonNegative = (value) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return null
+  return Math.max(0, Math.floor(numberValue))
+}
+
+const buildRoundOutcome = (players) => {
+  if (players.length !== 2) return null
+  if (!uiState.draftKnockerId) return null
+  const knockerId = uiState.draftKnockerId
+  const opponent = players.find((player) => player.id !== knockerId)
+  if (!opponent) return null
+  const knockerDeadwood = parseNonNegative(uiState.draftDeadwood[knockerId])
+  const opponentDeadwood = parseNonNegative(uiState.draftDeadwood[opponent.id])
+  if (knockerDeadwood === null || opponentDeadwood === null) return null
+
+  const scores = {
+    [knockerId]: 0,
+    [opponent.id]: 0,
+  }
+
+  const isGin = knockerDeadwood === 0
+  const isBigGin = isGin && uiState.draftBigGin
+  let summary = ""
+
+  if (isGin) {
+    const bonus = isBigGin ? 31 : 25
+    scores[knockerId] = opponentDeadwood + bonus
+    summary = isBigGin ? "Big Gin" : "Gin"
+  } else if (opponentDeadwood <= knockerDeadwood) {
+    scores[opponent.id] = knockerDeadwood - opponentDeadwood + 25
+    summary = "Undercut"
+  } else {
+    scores[knockerId] = opponentDeadwood - knockerDeadwood
+    summary = "Knock"
+  }
+
+  return {
+    scores,
+    summary,
+    knockerId,
+    knockerDeadwood,
+    opponentDeadwood,
+    isGin,
+    isBigGin,
+  }
 }
 
 const totalsFor = (rounds, players) => {
@@ -73,28 +125,35 @@ const totalsFor = (rounds, players) => {
 
 const GinRummyApp = {
   oninit: () => {
+    resetDraft(state.players)
     saveState(state)
   },
   view: () => {
     const totals = totalsFor(state.rounds, state.players)
-    ensureDraftScores()
+    const canScore = state.players.length === 2
+    if (uiState.draftKnockerId === null && state.players.length > 0) {
+      uiState.draftKnockerId = state.players[0].id
+    }
+    ensureDraftDeadwood(state.players)
+    const draftOutcome = buildRoundOutcome(state.players)
 
     const addRound = (event) => {
       event.preventDefault()
-      const scores = {}
-      let hasScore = false
-      state.players.forEach((player) => {
-        const raw = uiState.draftScores[player.id]
-        const value = raw === "" ? 0 : Number(raw)
-        if (raw !== "") hasScore = true
-        scores[player.id] = Number.isNaN(value) ? 0 : value
-      })
-      if (!hasScore) return
+      if (!canScore) return
+      if (!draftOutcome) return
       state.rounds.push({
         id: state.nextRoundId++,
-        scores,
+        scores: draftOutcome.scores,
+        meta: {
+          knockerId: draftOutcome.knockerId,
+          knockerDeadwood: draftOutcome.knockerDeadwood,
+          opponentDeadwood: draftOutcome.opponentDeadwood,
+          isGin: draftOutcome.isGin,
+          isBigGin: draftOutcome.isBigGin,
+          summary: draftOutcome.summary,
+        },
       })
-      clearDraftScores()
+      resetDraft(state.players)
       saveState(state)
     }
 
@@ -119,44 +178,14 @@ const GinRummyApp = {
               },
               "aria-label": "Player name",
             }),
-            state.players.length > 2
-              ? m(
-                  "button.secondary-button",
-                  {
-                    type: "button",
-                    onclick: () => {
-                      state.players = state.players.filter(
-                        (item) => item.id !== player.id
-                      )
-                      state.rounds = state.rounds.map((round) => {
-                        const nextScores = { ...round.scores }
-                        delete nextScores[player.id]
-                        return { ...round, scores: nextScores }
-                      })
-                      delete uiState.draftScores[player.id]
-                      saveState(state)
-                    },
-                  },
-                  "Remove"
-                )
-              : null,
           ])
         ),
-        m(
-          "button.secondary-button",
-          {
-            type: "button",
-            onclick: () => {
-              state.players.push({
-                id: state.nextPlayerId++,
-                name: `Player ${state.nextPlayerId - 1}`,
-              })
-              ensureDraftScores()
-              saveState(state)
-            },
-          },
-          "Add player"
-        ),
+        !canScore
+          ? m(
+              "p",
+              "Gin Rummy scoring is currently set up for exactly two players."
+            )
+          : null,
       ]),
       m("section.card", [
         m("div.section-header", [
@@ -174,6 +203,12 @@ const GinRummyApp = {
             "Clear rounds"
           ),
         ]),
+        !canScore
+          ? m(
+              "p",
+              "Gin Rummy scoring is currently set up for two players."
+            )
+          : null,
         m(
           "form.round-form",
           {
@@ -190,7 +225,19 @@ const GinRummyApp = {
               m("tbody", [
                 ...state.rounds.map((round) =>
                   m("tr", { key: round.id }, [
-                    m("td", `#${round.id}`),
+                    m("td", [
+                      m("div", `#${round.id}`),
+                      round.meta
+                        ? m(
+                            "div.muted-text",
+                            `${round.meta.summary} (Knocker ${
+                              state.players.find(
+                                (player) => player.id === round.meta.knockerId
+                              )?.name || "?"
+                            }, DW ${round.meta.knockerDeadwood})`
+                          )
+                        : null,
+                    ]),
                     ...state.players.map((player) =>
                       m("td", round.scores[player.id] ?? 0)
                     ),
@@ -199,20 +246,63 @@ const GinRummyApp = {
                 m("tr", { key: "input-row" }, [
                   m("td", [
                     m("div", "Next"),
+                    m("div.field-label", "Knocker"),
+                    m("div.radio-group", [
+                      ...state.players.map((player) =>
+                        m("label.knocker-choice", [
+                          m("input", {
+                            type: "radio",
+                            name: "knocker",
+                            value: player.id,
+                            checked: uiState.draftKnockerId === player.id,
+                            disabled: !canScore,
+                            onchange: () => {
+                              uiState.draftKnockerId = player.id
+                            },
+                          }),
+                          player.name,
+                        ])
+                      ),
+                      m("label.checkbox-field", [
+                        m("input", {
+                          type: "checkbox",
+                          checked: uiState.draftBigGin,
+                          disabled:
+                            !canScore ||
+                            parseNonNegative(
+                              uiState.draftDeadwood[uiState.draftKnockerId]
+                            ) !== 0,
+                          onchange: (event) => {
+                            uiState.draftBigGin = event.target.checked
+                          },
+                        }),
+                        "Big Gin",
+                      ]),
+                    ]),
                     m(
                       "button.primary-button",
-                      { type: "submit" },
+                      { type: "submit", disabled: !draftOutcome },
                       "Add round"
                     ),
+                    draftOutcome
+                      ? m(
+                          "div.muted-text",
+                          `${draftOutcome.summary} score ready`
+                        )
+                      : m("div.muted-text", "Enter deadwood to score"),
                   ]),
                   ...state.players.map((player) =>
                     m("td", [
+                      m("div.field-label", "Deadwood"),
                       m("input.score-input", {
                         type: "number",
+                        min: 0,
+                        step: 1,
                         inputmode: "numeric",
-                        value: uiState.draftScores[player.id],
+                        value: uiState.draftDeadwood[player.id],
+                        disabled: !canScore,
                         oninput: (event) => {
-                          uiState.draftScores[player.id] = event.target.value
+                          uiState.draftDeadwood[player.id] = event.target.value
                         },
                         placeholder: "0",
                       }),

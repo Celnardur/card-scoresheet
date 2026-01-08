@@ -159,6 +159,14 @@ a {
   box-sizing: border-box;
 }
 
+.select-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #1f1b16;
+  border-radius: 10px;
+  background: #fff;
+}
+
 .section-header {
   display: flex;
   flex-wrap: wrap;
@@ -190,6 +198,52 @@ a {
 .score-table td:first-child {
   text-align: left;
   width: 140px;
+}
+
+.inline-fields {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 10px;
+}
+
+.inline-field {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.muted-text {
+  font-size: 0.9rem;
+  color: #5b544c;
+  margin-top: 6px;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b544c;
+  margin-top: 6px;
+}
+
+.radio-group {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.knocker-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
 }
 
 .score-table tfoot td {
