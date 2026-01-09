@@ -66,6 +66,13 @@ a {
   background: #f8d66a;
 }
 
+.primary-button:disabled {
+  background: #d7ccb5;
+  border-color: #9a8f7a;
+  color: #6b6256;
+  cursor: not-allowed;
+}
+
 .score-table .primary-button {
   margin-top: 8px;
 }
@@ -222,6 +229,18 @@ a {
 .muted-text {
   font-size: 0.9rem;
   color: #5b544c;
+  margin-top: 6px;
+}
+
+.inline-muted {
+  font-size: 0.85rem;
+  color: #5b544c;
+  margin-left: 6px;
+}
+
+.error-text {
+  font-size: 0.9rem;
+  color: #b22222;
   margin-top: 6px;
 }
 
